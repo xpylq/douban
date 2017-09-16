@@ -25,6 +25,7 @@ class GroupSpider(scrapy.Spider):
         for item in json_str['items']:
             url = re.search('\?url=(.*)&amp;query', item).group(1)
             url = unquote(url)
+            url = re.sub("http", "https", url)
             name = re.search('alt=\"(.*)\">', item).group(1)
             if not DBComponent.isExistGroup(url):
                 DBComponent.insertGroup(name, url)
