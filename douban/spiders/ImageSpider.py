@@ -1,11 +1,14 @@
 # /usr/bin/env python
 # encoding=utf-8
+import datetime
 import random
 import re
+import time
 
 import scrapy
-from douban.items import ImageItem
+
 from douban.component import DBComponent
+from douban.items import ImageItem
 
 
 class ImageSpider(scrapy.Spider):
@@ -19,8 +22,27 @@ class ImageSpider(scrapy.Spider):
             # yield scrapy.Request(url=url + "discussion?start=50", callback=self.parse_group)
 
     def parse_group(self, response):
-        for url in response.css("table.olt tr:not(:first-child) td.title a::attr(href)").extract():
-            yield scrapy.Request(url=url, callback=self.parse_content)
+        tr_list = response.css("table.olt tr:not(:first-child)")
+        tr_index = 0
+        for tr in tr_list:
+            url = tr.css("td.title a::attr(href)").extract_first()
+            try:
+                reply_time = tr.css("td.time::text").extract_first()
+                reply_time = time.strptime(reply_time, "%m-%d %H:%M")  # 解析回复时间
+                reply_month = reply_time.tm_mon
+                reply_day = reply_time.tm_mday
+                reply_time_min = datetime.date.today() + datetime.timedelta(-3)  # 获取当前时间-2天的时间
+                reply_month_min = reply_time_min.month
+                reply_day_min = reply_time_min.day
+                tr_index += 1
+            except BaseException, e:
+                DBComponent.deleteGroup(url)
+                break
+            # 查找回复时间>2天的
+            if (reply_month > reply_month_min) or (reply_month == reply_month_min and reply_day >= reply_day_min):
+                yield scrapy.Request(url=url, callback=self.parse_content)
+            elif tr_index == 1:
+                DBComponent.deleteGroup(url)
 
     def parse_content(self, response):
         download_flag = False

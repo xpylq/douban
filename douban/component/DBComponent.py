@@ -64,6 +64,20 @@ def insertGroup(name, url):
         conn.close()
 
 
+def deleteGroup(url):
+    conn = MySQLdb.connect(host="127.0.0.1", user="root", passwd="root", db="douban", charset="utf8",
+                           cursorclass=MySQLdb.cursors.DictCursor)
+    cursor = conn.cursor()
+    sql = "delete from douban_group where url='%s'" % url
+    try:
+        cursor.execute(sql)
+        conn.commit()
+    except BaseException, e:
+        print e
+    finally:
+        conn.close()
+
+
 def isExistGroup(url):
     conn = MySQLdb.connect(host="127.0.0.1", user="root", passwd="root", db="douban", charset="utf8",
                            cursorclass=MySQLdb.cursors.DictCursor)
