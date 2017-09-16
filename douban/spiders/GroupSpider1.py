@@ -3,9 +3,7 @@
 import scrapy
 import json
 import re
-
 from douban.component import DBComponent
-from douban.items import GroupItem
 from urllib import unquote
 
 
@@ -14,7 +12,7 @@ class GroupSpider(scrapy.Spider):
     name = "groupSpider1"
 
     def start_requests(self):
-        urls = ['https://www.douban.com/j/search?q=%E7%94%B5%E5%BD%B1&start=0&cat=1019']
+        urls = ['https://www.douban.com/j/search?q=单身&start=0&cat=1019']
         for url in urls:
             yield scrapy.Request(url=url, callback=self.parse)
 

@@ -15,7 +15,7 @@ class ImageSpider(scrapy.Spider):
     name = "imageSpider"
 
     def start_requests(self):
-        group_list = DBComponent.getAllGroup()
+        group_list = ['http://www.douban.com/group/305526/']
         random.shuffle(group_list)
         for url in group_list:
             yield scrapy.Request(url=url + "discussion?start=0", callback=self.parse_group)
@@ -23,6 +23,7 @@ class ImageSpider(scrapy.Spider):
 
     def parse_group(self, response):
         tr_list = response.css("table.olt tr:not(:first-child)")
+        group_url = re.sub("discussion.*", "", response.url)
         tr_index = 0
         for tr in tr_list:
             url = tr.css("td.title a::attr(href)").extract_first()
@@ -36,13 +37,13 @@ class ImageSpider(scrapy.Spider):
                 reply_day_min = reply_time_min.day
                 tr_index += 1
             except BaseException, e:
-                DBComponent.deleteGroup(url)
+                DBComponent.deleteGroup(group_url)
                 break
             # 查找回复时间>2天的
             if (reply_month > reply_month_min) or (reply_month == reply_month_min and reply_day >= reply_day_min):
                 yield scrapy.Request(url=url, callback=self.parse_content)
             elif tr_index == 1:
-                DBComponent.deleteGroup(url)
+                DBComponent.deleteGroup(group_url)
 
     def parse_content(self, response):
         download_flag = False
