@@ -32,8 +32,8 @@ class ImageSpider(scrapy.Spider):
                 boolm_file.close()
 
     def start_requests(self):
-        group_list = ['https://www.douban.com/group/368133/']
-        # group_list = DBComponent.getAllGroup()
+        # group_list = ['https://www.douban.com/group/368133/']
+        group_list = DBComponent.getAllGroup()
         random.shuffle(group_list)
         for url in group_list:
             yield scrapy.Request(url=url + "discussion?start=0", callback=self.parse_group)
@@ -60,7 +60,7 @@ class ImageSpider(scrapy.Spider):
             # 查找回复时间>2天的
             if (reply_month > reply_month_min) or (reply_month == reply_month_min and reply_day >= reply_day_min):
                 is_exist = ImageSpider.boolm_filter.add(url)
-                print 'is_exist', is_exist
+                # print 'is_exist', is_exist
                 if not is_exist:
                     yield scrapy.Request(url=url, callback=self.parse_content)
             elif tr_index == 1:
