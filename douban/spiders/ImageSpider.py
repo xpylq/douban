@@ -23,6 +23,7 @@ class ImageSpider(scrapy.Spider):
             self.bloomFilter = BloomFilter(10000000, 0.01, ImageSpider.boolmPath)
 
     def start_requests(self):
+        # group_list = ['https://www.douban.com/group/368133/']
         group_list = DBComponent.getAllGroup()
         random.shuffle(group_list)
         for url in group_list:
@@ -50,6 +51,7 @@ class ImageSpider(scrapy.Spider):
             # 查找回复时间>2天的
             if (reply_month > reply_month_min) or (reply_month == reply_month_min and reply_day >= reply_day_min):
                 is_exist = self.bloomFilter.add(url)
+                # print 'is_exist', is_exist
                 if not is_exist:
                     yield scrapy.Request(url=url, callback=self.parse_content)
             elif tr_index == 1:
