@@ -4,8 +4,10 @@ import datetime
 import random
 import re
 import time
+
+import os
 import scrapy
-from pybloomfilter import BloomFilter
+from pybloom import BloomFilter
 
 from douban.component import DBComponent
 from douban.items import ImageItem
@@ -17,14 +19,21 @@ class ImageSpider(scrapy.Spider):
 
     def __init__(self, name=None, **kwargs):
         super(ImageSpider, self).__init__(name, **kwargs)
-        try:
-            self.bloomFilter = BloomFilter.open(ImageSpider.boolmPath)
-        except BaseException:
-            self.bloomFilter = BloomFilter(10000000, 0.01, ImageSpider.boolmPath)
+        is_exist = os.path.exists(ImageSpider.boolmPath)
+        if not is_exist:
+            ImageSpider.boolm_filter = BloomFilter(1000000, 0.001)
+        else:
+            boolm_file = open(ImageSpider.boolmPath, 'r')
+            try:
+                ImageSpider.boolm_filter = BloomFilter.fromfile(boolm_file)
+            except BaseException:
+                ImageSpider.boolm_filter = BloomFilter(1000000, 0.001)
+            finally:
+                boolm_file.close()
 
     def start_requests(self):
-        # group_list = ['https://www.douban.com/group/368133/']
-        group_list = DBComponent.getAllGroup()
+        group_list = ['https://www.douban.com/group/368133/']
+        # group_list = DBComponent.getAllGroup()
         random.shuffle(group_list)
         for url in group_list:
             yield scrapy.Request(url=url + "discussion?start=0", callback=self.parse_group)
@@ -50,8 +59,8 @@ class ImageSpider(scrapy.Spider):
                 break
             # 查找回复时间>2天的
             if (reply_month > reply_month_min) or (reply_month == reply_month_min and reply_day >= reply_day_min):
-                is_exist = self.bloomFilter.add(url)
-                # print 'is_exist', is_exist
+                is_exist = ImageSpider.boolm_filter.add(url)
+                print 'is_exist', is_exist
                 if not is_exist:
                     yield scrapy.Request(url=url, callback=self.parse_content)
             elif tr_index == 1:
@@ -73,3 +82,10 @@ class ImageSpider(scrapy.Spider):
             image_item = ImageItem()
             image_item["image_urls"] = topic_content.css("img::attr(src)").extract()
             return image_item
+
+    @staticmethod
+    def close(spider, reason):
+        boolm_file = open(ImageSpider.boolmPath, 'a')
+        ImageSpider.boolm_filter.tofile(boolm_file)
+        boolm_file.close()
+        return super(ImageSpider, spider).close(spider, reason)
