@@ -4,8 +4,8 @@ import datetime
 import random
 import re
 import time
-
 import scrapy
+from pybloomfilter import BloomFilter
 
 from douban.component import DBComponent
 from douban.items import ImageItem
@@ -13,9 +13,17 @@ from douban.items import ImageItem
 
 class ImageSpider(scrapy.Spider):
     name = "imageSpider"
+    boolmPath = "./douban_bloom_filter"
+
+    def __init__(self, name=None, **kwargs):
+        super(ImageSpider, self).__init__(name, **kwargs)
+        try:
+            self.bloomFilter = BloomFilter.open(ImageSpider.boolmPath)
+        except BaseException:
+            self.bloomFilter = BloomFilter(10000000, 0.01, ImageSpider.boolmPath)
 
     def start_requests(self):
-        group_list = ['http://www.douban.com/group/305526/']
+        group_list = DBComponent.getAllGroup()
         random.shuffle(group_list)
         for url in group_list:
             yield scrapy.Request(url=url + "discussion?start=0", callback=self.parse_group)
@@ -41,7 +49,9 @@ class ImageSpider(scrapy.Spider):
                 break
             # 查找回复时间>2天的
             if (reply_month > reply_month_min) or (reply_month == reply_month_min and reply_day >= reply_day_min):
-                yield scrapy.Request(url=url, callback=self.parse_content)
+                is_exist = self.bloomFilter.add(url)
+                if not is_exist:
+                    yield scrapy.Request(url=url, callback=self.parse_content)
             elif tr_index == 1:
                 DBComponent.deleteGroup(group_url)
 
