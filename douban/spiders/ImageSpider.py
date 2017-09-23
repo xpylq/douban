@@ -85,7 +85,7 @@ class ImageSpider(scrapy.Spider):
 
     @staticmethod
     def close(spider, reason):
-        boolm_file = open(ImageSpider.boolmPath, 'a')
+        boolm_file = open(ImageSpider.boolmPath, 'w+')
         ImageSpider.boolm_filter.tofile(boolm_file)
         boolm_file.close()
         return super(ImageSpider, spider).close(spider, reason)
