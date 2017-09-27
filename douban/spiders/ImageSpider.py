@@ -61,13 +61,13 @@ class ImageSpider(scrapy.Spider):
                 break
             # 查找回复时间>2天的
             if (reply_month > reply_month_min) or (reply_month == reply_month_min and reply_day >= reply_day_min):
-                is_exist = self.add_2_bloom(url)
-                if not is_exist:
+                if url not in self.bloom_filter:
                     yield scrapy.Request(url=url, callback=self.parse_content)
             elif tr_index == 1:
                 DBComponent.deleteGroup(group_url)
 
     def parse_content(self, response):
+        self.add_2_bloom(response.url)
         download_flag = False
         topic_content = response.css(".topic-doc .topic-content")
         for content in topic_content.css("p::text").extract():
@@ -92,6 +92,6 @@ class ImageSpider(scrapy.Spider):
             bloom_file = open(ImageSpider.bloomPath, "w+")
             self.bloom_filter.tofile(bloom_file)
             bloom_file.close()
-            print "bloom_filter.tofile"
+            print "bloom_filter.tofile",self.bloom_filter.__len__()
         print "is_exist", is_exist
         return is_exist
