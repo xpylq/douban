@@ -15,26 +15,28 @@ from douban.items import ImageItem
 
 class ImageSpider(scrapy.Spider):
     name = "imageSpider"
-    boolmPath = "./douban_bloom_filter"
+    bloomPath = "./douban_bloom_filter"
 
     def __init__(self, name=None, **kwargs):
         super(ImageSpider, self).__init__(name, **kwargs)
-        is_exist = os.path.exists(ImageSpider.boolmPath)
+        self.add_bloom_filter_count = 1
+        is_exist = os.path.exists(ImageSpider.bloomPath)
         if not is_exist:
-            ImageSpider.boolm_filter = BloomFilter(1000000, 0.001)
+            self.bloom_filter = BloomFilter(1000000, 0.001)
         else:
-            boolm_file = open(ImageSpider.boolmPath, 'r')
+            boolm_file = open(ImageSpider.bloomPath, 'r')
             try:
-                ImageSpider.boolm_filter = BloomFilter.fromfile(boolm_file)
-            except BaseException:
-                ImageSpider.boolm_filter = BloomFilter(1000000, 0.001)
+                self.bloom_filter = BloomFilter.fromfile(boolm_file)
+            except BaseException, e:
+                print e
+                self.bloom_filter = BloomFilter(1000000, 0.001)
             finally:
                 boolm_file.close()
 
     def start_requests(self):
         # group_list = ['https://www.douban.com/group/368133/']
         group_list = DBComponent.getAllGroup()
-        random.shuffle(group_list)
+        # random.shuffle(group_list)
         for url in group_list:
             yield scrapy.Request(url=url + "discussion?start=0", callback=self.parse_group)
             # yield scrapy.Request(url=url + "discussion?start=50", callback=self.parse_group)
@@ -59,8 +61,7 @@ class ImageSpider(scrapy.Spider):
                 break
             # 查找回复时间>2天的
             if (reply_month > reply_month_min) or (reply_month == reply_month_min and reply_day >= reply_day_min):
-                is_exist = ImageSpider.boolm_filter.add(url)
-                # print 'is_exist', is_exist
+                is_exist = self.add_2_bloom(url)
                 if not is_exist:
                     yield scrapy.Request(url=url, callback=self.parse_content)
             elif tr_index == 1:
@@ -83,9 +84,14 @@ class ImageSpider(scrapy.Spider):
             image_item["image_urls"] = topic_content.css("img::attr(src)").extract()
             return image_item
 
-    @staticmethod
-    def close(spider, reason):
-        boolm_file = open(ImageSpider.boolmPath, 'w+')
-        ImageSpider.boolm_filter.tofile(boolm_file)
-        boolm_file.close()
-        return super(ImageSpider, spider).close(spider, reason)
+    def add_2_bloom(self, url):
+        is_exist = self.bloom_filter.add(url)
+        if not is_exist:
+            self.add_bloom_filter_count += 1
+        if self.add_bloom_filter_count % 100 == 0:
+            bloom_file = open(ImageSpider.bloomPath, "w+")
+            self.bloom_filter.tofile(bloom_file)
+            bloom_file.close()
+            print "bloom_filter.tofile"
+        print "is_exist", is_exist
+        return is_exist
