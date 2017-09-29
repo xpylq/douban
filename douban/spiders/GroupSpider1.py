@@ -11,7 +11,7 @@ class GroupSpider(scrapy.Spider):
     name = "groupSpider1"
 
     def start_requests(self):
-        urls = ['https://www.douban.com/j/search?q=' + self.search + '单身+&start=0&cat=1019']
+        urls = ['https://www.douban.com/j/search?q=' + self.search + '&start=0&cat=1019']
         print "urls", urls
         for url in urls:
             yield scrapy.Request(url=url, callback=self.parse)
