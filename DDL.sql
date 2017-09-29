@@ -1,3 +1,4 @@
+create database douban CHARACTER SET 'utf8' COLLATE 'utf8_general_ci'
 DROP TABLE IF EXISTS `douban_proxy`;
 CREATE TABLE `douban_proxy` (
   `id`  BIGINT NOT NULL AUTO_INCREMENT COMMENT '',
