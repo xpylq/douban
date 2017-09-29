@@ -1,6 +1,6 @@
 # /usr/bin/env python
 # encoding=utf-8
-#pip install pybloomfiltermmap
+# pip install pybloomfiltermmap
 import datetime
 import random
 import re
@@ -28,6 +28,7 @@ class ImageSpider(scrapy.Spider):
             boolm_file = open(ImageSpider.bloomPath, 'r')
             try:
                 self.bloom_filter = BloomFilter.fromfile(boolm_file)
+                print "from_file", self.bloom_filter.__len__()
             except BaseException, e:
                 print e
                 self.bloom_filter = BloomFilter(1000000, 0.001)
@@ -93,6 +94,6 @@ class ImageSpider(scrapy.Spider):
             bloom_file = open(ImageSpider.bloomPath, "w+")
             self.bloom_filter.tofile(bloom_file)
             bloom_file.close()
-            print "bloom_filter.tofile",self.bloom_filter.__len__()
+            print "to_file", self.bloom_filter.__len__()
         print "is_exist", is_exist
         return is_exist
