@@ -6,8 +6,7 @@ import re
 from douban.component import DBComponent
 from urllib import unquote
 
-
-# scrapy crawl groupSpider1
+# scrapy crawl groupSpider1 -a search=
 class GroupSpider(scrapy.Spider):
     name = "groupSpider1"
 
