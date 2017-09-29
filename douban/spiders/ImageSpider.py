@@ -1,5 +1,6 @@
 # /usr/bin/env python
 # encoding=utf-8
+#pip install pybloomfiltermmap
 import datetime
 import random
 import re
