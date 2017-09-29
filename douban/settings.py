@@ -90,9 +90,9 @@ ROBOTSTXT_OBEY = False
 
 FEED_EXPORT_ENCODING = 'utf-8'
 RETRY_TIMES = 5
-DOWNLOAD_TIMEOUT = 20
+DOWNLOAD_TIMEOUT = 30
 COOKIES_ENABLED = True
-CONCURRENT_REQUESTS = 10
+CONCURRENT_REQUESTS = 5
 DOWNLOAD_DELAY = 1
 DOWNLOADER_MIDDLEWARES = {
     'douban.middlewares.RandomUserAgent': 1000,
@@ -103,7 +103,7 @@ ITEM_PIPELINES = {
     'douban.pipelines.ProxyPipeline': 100,
     'douban.pipelines.GroupPipeline': 200,
 }
-IMAGES_STORE = 'E:\image'
+IMAGES_STORE = '/Users/youzhihao/Downloads/image'
 USER_AGENTS = [
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36",
 ]
