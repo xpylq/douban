@@ -92,6 +92,7 @@ class ImageSpider(scrapy.Spider):
         is_exist = self.bloom_filter.add(url)
         if not is_exist:
             self.add_bloom_filter_count += 1
+            print "not exist", url
         if self.add_bloom_filter_count % 100 == 0:
             bloom_file = open(ImageSpider.bloomPath, "w+")
             self.bloom_filter.tofile(bloom_file)
