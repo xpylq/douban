@@ -65,6 +65,8 @@ class ImageSpider(scrapy.Spider):
             if (reply_month > reply_month_min) or (reply_month == reply_month_min and reply_day >= reply_day_min):
                 if url not in self.bloom_filter:
                     yield scrapy.Request(url=url, callback=self.parse_content)
+                else:
+                    print "exist", url
             elif tr_index == 1:
                 DBComponent.deleteGroup(group_url)
 
@@ -95,5 +97,4 @@ class ImageSpider(scrapy.Spider):
             self.bloom_filter.tofile(bloom_file)
             bloom_file.close()
             print "to_file", self.bloom_filter.__len__()
-        print "is_exist", is_exist
         return is_exist
