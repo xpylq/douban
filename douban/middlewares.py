@@ -72,48 +72,48 @@ class RandomUserAgent(object):
         request.headers['User-Agent'] = random.choice(self.agents)
 
 
-class RandomProxy(object):
-    def __init__(self):
-        self.ip_list = DBComponent.getAllProxy()
-        self.ip_list_used = []
-        self.threadReadLock = threading.Lock()
-        self.threadWriteLock = threading.Lock()
-
-    def process_request(self, request, spider):
-        if self.ip_list:
-            self.threadReadLock.acquire()
-            ip_list_index = random.randint(0, len(self.ip_list) - 1)
-            self.ip_list_used.append(self.ip_list[ip_list_index])
-            del self.ip_list[ip_list_index]
-            ip_list_used_index = len(self.ip_list_used) - 1
-            request.meta['proxy'] = "http://%s" % self.ip_list_used[ip_list_used_index]
-            request.meta['index'] = ip_list_used_index
-            self.threadReadLock.release()
-        else:
-            request.meta['index'] = -1
-            # self.ip_list = DBComponent.getAllProxy()
-
-    def process_response(self, request, response, spider):
-        if response.status == 200:
-            return response
-        else:
-            for set_cookie in response.headers.getlist('Set-Cookie'):
-                sts = set_cookie.split(";")[0].split("=")
-                name = sts[0]
-                value = sts[1]
-                cookies = {name: value}
-                url = request.url
-                return Request(url=url, dont_filter=True,
-                               cookies=cookies)
-        return response
-
-    def process_exception(self, request, exception, spider):
-        index = request.meta["index"]
-        if index > -1:
-            ip = self.ip_list_used[index]
-            DBComponent.deleteProxy(ip)
-            self.threadWriteLock.acquire()
-            del self.ip_list_used[index]
-            self.threadWriteLock.release()
-        print exception
-        return None
+# class RandomProxy(object):
+#     def __init__(self):
+#         self.ip_list = DBComponent.getAllProxy()
+#         self.ip_list_used = []
+#         self.threadReadLock = threading.Lock()
+#         self.threadWriteLock = threading.Lock()
+#
+#     def process_request(self, request, spider):
+#         if self.ip_list:
+#             self.threadReadLock.acquire()
+#             ip_list_index = random.randint(0, len(self.ip_list) - 1)
+#             self.ip_list_used.append(self.ip_list[ip_list_index])
+#             del self.ip_list[ip_list_index]
+#             ip_list_used_index = len(self.ip_list_used) - 1
+#             request.meta['proxy'] = "http://%s" % self.ip_list_used[ip_list_used_index]
+#             request.meta['index'] = ip_list_used_index
+#             self.threadReadLock.release()
+#         else:
+#             request.meta['index'] = -1
+#             # self.ip_list = DBComponent.getAllProxy()
+#
+#     def process_response(self, request, response, spider):
+#         if response.status == 200:
+#             return response
+#         else:
+#             for set_cookie in response.headers.getlist('Set-Cookie'):
+#                 sts = set_cookie.split(";")[0].split("=")
+#                 name = sts[0]
+#                 value = sts[1]
+#                 cookies = {name: value}
+#                 url = request.url
+#                 return Request(url=url, dont_filter=True,
+#                                cookies=cookies)
+#         return response
+#
+#     def process_exception(self, request, exception, spider):
+#         index = request.meta["index"]
+#         if index > -1:
+#             ip = self.ip_list_used[index]
+#             DBComponent.deleteProxy(ip)
+#             self.threadWriteLock.acquire()
+#             del self.ip_list_used[index]
+#             self.threadWriteLock.release()
+#         print(exception)
+#         return None

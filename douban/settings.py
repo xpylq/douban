@@ -92,11 +92,11 @@ FEED_EXPORT_ENCODING = 'utf-8'
 RETRY_TIMES = 5
 DOWNLOAD_TIMEOUT = 30
 COOKIES_ENABLED = True
-CONCURRENT_REQUESTS = 5
+CONCURRENT_REQUESTS = 2
 DOWNLOAD_DELAY = 1
 DOWNLOADER_MIDDLEWARES = {
     'douban.middlewares.RandomUserAgent': 1000,
-    'douban.middlewares.RandomProxy': 1100,
+    # 'douban.middlewares.RandomProxy': 1100,
 }
 ITEM_PIPELINES = {
     'scrapy.pipelines.images.ImagesPipeline': 1,
